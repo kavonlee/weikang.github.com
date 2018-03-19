@@ -1,0 +1,277 @@
+<!--本游戏包含的所有内容（包括但不限于：代码、图片、视像及声音内容、名称）的所有权归北京米兜科技有限公司所有。
+任何单位或个人将本游戏提供的内容与服务用于商业、盈利、广告性等目的时，需征得北京米兜科技有限公司相关权利人的书
+面许可；将本网站提供的内容与服务用于非商业用途时，应遵守著作权法以及其他相关法律的规定，不得侵犯游戏所有者及相
+关权利人的权益。-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Catch Cow</title>
+    <!--<link rel="icon" type="image/GIF" href="res/favicon.ico"/>-->
+
+    <meta name="viewport"
+          content="width=device-width,user-scalable=no,initial-scale=1, minimum-scale=1,maximum-scale=1,target-densitydpi=device-dpi"/>
+
+    <!--https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html-->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- force webkit on 360 -->
+    <meta name="renderer" content="webkit"/>
+    <meta name="force-rendering" content="webkit"/>
+    <!-- force edge on IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="msapplication-tap-highlight" content="no">
+
+    <!-- force full screen on some browser -->
+    <meta name="full-screen" content="yes"/>
+    <meta name="x5-fullscreen" content="true"/>
+    <meta name="360-fullscreen" content="true"/>
+
+    <!-- force screen orientation on some browser -->
+    <!-- <meta name="screen-orientation" content="portrait"/>
+    <meta name="x5-orientation" content="portrait"> -->
+
+    <meta name="browsermode" content="application">
+    <meta name="x5-page-mode" content="app">
+
+    <style type="text/css">
+        html {
+            -ms-touch-action: none;
+        }
+
+        body, canvas, div {
+            margin: 0;
+            padding: 0;
+            outline: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -khtml-user-select: none;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        }
+        .test{
+            background: #320aeb;
+            width: 0px;
+            height: 3px;
+            transition: all 16s linear 0s;
+            -moz-transition: all 16s linear 0s;
+            -webkit-transition: all 16s linear 0s;
+            -o-transition:all 16s linear 0s;
+        }
+        #parent{
+            z-index:1000;
+            opacity:0;
+            position:absolute;
+            bottom:0;
+            left:0;
+            border:1px solid silver;
+            background:white;
+            width:100%;
+
+        }
+    </style>
+    <style>
+        .adslot_1 { display:inline-block; width: 320px; height: 50px; }
+        @media (min-width:500px) { .adslot_1 { width: 468px; height: 60px; } }
+        @media (min-width:800px) { .adslot_1 { width: 728px; height: 90px; } }
+    </style>
+</head>
+
+<body style="padding:0; margin: 0; background: #ddd;" align="center">
+<div style="align:center;display: none"><img src="res/game/share.png" width="10%" /></div>
+<div id="loadingImg" style="top:35%;width: 100%;position:absolute; ">
+    <div id="logoImg" style="align:center;display: none">
+    </div>
+    <div style="margin-top:10%">
+        <img src="res/loading.gif" width="7%" height="7%"  />
+    </div>
+</div>
+
+
+<div id="canvasDiv" style="height: 500px;position:relative">
+    <canvas id="gameCanvas" width="720" height="1280" ></canvas>
+    <div id="parent">
+        <div id="div" class="test"></div>
+    </div>
+</div>
+<script>
+    var IOS_FLAG = false;
+    var TwitterFlag = false;
+    var FaceBookFlag = false;
+    autodivheight();
+    function autodivheight(){
+        var winHeight=0;
+        if (window.innerHeight)
+            winHeight = window.innerHeight;
+        else if ((document.body) && (document.body.clientHeight))
+            winHeight = document.body.clientHeight;
+        //通过深入Document内部对body进行检测，获取浏览器窗口高度
+        if (document.documentElement && document.documentElement.clientHeight)
+            winHeight = document.documentElement.clientHeight;
+        var currHeight = winHeight * 0.87;
+        //判断是否在twitter或facebook打开
+        var agent = navigator.userAgent.toLowerCase() ;
+        if(agent.indexOf("twitter") > 0) {
+            TwitterFlag = true;
+        }
+        if(agent.indexOf("fbav") > 0) {
+            FaceBookFlag = true;
+        }
+        if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
+            IOS_FLAG = true;
+        }
+        if(IOS_FLAG && (FaceBookFlag || TwitterFlag)) {
+            if(agent.indexOf("messenger") == -1) {
+                currHeight = currHeight - 107;
+            }
+        }
+        document.getElementById("canvasDiv").style.height = currHeight+"px";
+    }
+    window.onresize=autodivheight;
+</script>
+<div align="center" style="font-size: 10px;color: dimgrey">advertisement</div>
+
+
+<div id="preloaderContainer" align="center" style="position: absolute;top:0px;left: 0px;width:100%;height:87%;z-index:999;"></div>
+<script type="text/javascript" src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+<script type="text/javascript" src="//imasdk.googleapis.com/js/sdkloader/preloader_test.js"></script>
+<script type="text/javascript">
+    var preloader;
+    var adCompleteFlag = false;
+    var resCompleteFlag = false;
+
+    var adEndComplete = false;
+    var resEndComplete = false;
+    function preloaderInit() {
+        preloader = new google.ima.Preloader(
+                document.getElementById('preloaderContainer'), {
+                    'adCompleteCallback': onAdComplete,
+                    'adLoadedCallback': onAdLoaded,
+                    'adErrorCallback': onAdError,
+                    'viewMode': google.ima.ViewMode.FULLSCREEN
+                });
+        preloader.initialize();
+    }
+    preloaderInit();
+    function showMyAds(){
+        // Request ads
+
+
+        if(preloader != undefined){
+//            var adTagUrl = 'http://googleads.g.doubleclick.net/pagead/ads?ad_type=image&client=ca-games-pub-8708616103041212&description_url=http%3A%2F%2Fwww.vsane.com&videoad_start_delay=0&hl=zh_CN';
+//            preloader.requestAds(adTagUrl);
+
+            cc.log("index001000");
+            var adTagUrl = 'https://googleads.g.doubleclick.net/pagead/ads?client=ca-games-pub-4047330371452174&slotname=7513039335&ad_type=video_image&description_url=http%3A%2F%2Fwww.wesane.com&max_ad_duration=30000&videoad_start_delay=0';
+            preloader.requestAds(adTagUrl);
+
+
+        }
+    }
+    oParent = document.getElementById('parent');
+    function onAdLoaded() {
+//        adCompleteFlag = true;
+        oParent.style.opacity=1;
+        document.getElementById("div").style.width="100%";
+        cc.log("index000");
+        preloader.showAd();
+    }
+    function onAdComplete() {
+//        adCompleteFlag = true;
+        oParent.style.opacity=0;
+        document.getElementById("div").style.width="0px";
+
+        cc.log("index0");
+        if(GameManager.playNum == 0){
+            cc.log("index1");
+            adCompleteFlag = true;
+            if(adCompleteFlag && resCompleteFlag){
+                cc.log("index2");
+                MainManager.startGame();
+                adCompleteFlag = false;
+            }
+        }
+
+        adEndComplete = true;
+        if(adEndComplete && resEndComplete){
+            MainManager.showGameEndLayer();
+            adEndComplete = false;
+        }
+
+    }
+    function onAdError() {
+//        adCompleteFlag = false;
+        oParent.style.opacity=0;
+        document.getElementById("div").style.width="0px";
+
+        cc.log("index3");
+        if(GameManager.playNum == 0){
+            cc.log("index4");
+            adCompleteFlag = true;
+            if(adCompleteFlag && resCompleteFlag){
+                cc.log("index5");
+                MainManager.startGame();
+                adCompleteFlag = false;
+            }
+        }
+
+        adEndComplete = true;
+        if(adEndComplete && resEndComplete){
+            MainManager.showGameEndLayer();
+            adEndComplete = false;
+        }
+
+
+    }
+</script>
+
+<script src="res/sys.min.js"></script>
+
+<script cocos src="game.min.js"></script>
+
+<!--<script>-->
+<!--(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){-->
+<!--(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),-->
+<!--m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)-->
+<!--})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');-->
+
+<!--ga('create', 'UA-74844988-11', 'auto');-->
+<!--ga('send', 'pageview');-->
+
+<!--</script>-->
+
+<!--<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>-->
+<!--&lt;!&ndash; 筋斗云 &ndash;&gt;-->
+<!--<ins class="adsbygoogle"-->
+     <!--style="display:inline-block;min-width:320px;max-width:970px;width:100%;height:60px"-->
+     <!--data-ad-client="ca-pub-8708616103041212"-->
+     <!--data-ad-slot="7559893383"></ins>-->
+<!--<script>-->
+    <!--(adsbygoogle = window.adsbygoogle || []).push({});-->
+<!--</script>-->
+
+
+<script type="text/javascript"><!--
+var width = document.body.clientWidth;
+var height = Math.floor(document.documentElement.clientHeight-document.documentElement.clientHeight*0.87-14);
+
+google_ad_client = "ca-pub-4047330371452174";
+/* 套牛 */
+google_ad_slot = "8646715084";
+google_ad_width = width;
+google_ad_height = height;
+//-->
+</script>
+<script type="text/javascript"
+        src="//pagead2.googlesyndication.com/pagead/show_ads.js
+
+">
+</script>
+
+
+
+
+</body>
+</html>
